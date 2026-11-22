@@ -1,0 +1,23 @@
+services:
+  postgres_shared:
+    image: postgis/postgis:17-3.5-alpine
+    container_name: postgres17_postgis_shared
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD:-postgres_admin_dev}
+      POSTGRES_INITDB_ARGS: "--locale-provider=icu --icu-locale=pt-BR"
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata_postgres17_shared:/var/lib/postgresql/data
+      - ./sql/00_init_multi_db.sql:/docker-entrypoint-initdb.d/00_init_multi_db.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata_postgres17_shared:
